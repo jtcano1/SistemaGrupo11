@@ -1,45 +1,96 @@
+
 package datos.inventarios;
 
-import conexion.ConexionOracle;
 import entidades.inventarios.DetalleInventario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DetalleInventarioDAO {
 
-    public boolean guardar(DetalleInventario detalle) {
+    // INSERTAR DETALLE
+    public boolean guardar(
+            DetalleInventario detalle, Connection cn)
+            throws SQLException {
 
-        boolean guardado = false;
+        String sql = "INSERT INTO DETALLE_INVENTARIO "
+                   + "(NUMERO_COMPROBANTE, ID_ARTICULO, "
+                   + "CANTIDAD, PRECIO) VALUES (?, ?, ?, ?)";
 
-        String sql =
-                "INSERT INTO DETALLE_INVENTARIO "
-                + "(NUMERO_COMPROBANTE, "
-                + "ID_ARTICULO, "
-                + "CANTIDAD, "
-                + "PRECIO) "
-                + "VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
 
-        try {
+            ps.setInt(1, detalle.getNumeroComprobante());
+            ps.setInt(2, detalle.getIdArticulo());
+            ps.setInt(3, detalle.getCantidad());
+            ps.setDouble(4, detalle.getPrecio());
 
-            Connection cn = new ConexionOracle().conectar();
+            return ps.executeUpdate() > 0;
+        }
+    }
 
-            PreparedStatement ps = cn.prepareStatement(sql);
+    // LISTAR DETALLES DE UN COMPROBANTE
+    public List<DetalleInventario> listarPorComprobante(
+            int numero, Connection cn) throws SQLException {
 
-            ps.setInt(1,detalle.getNumeroComprobante());
-            ps.setInt(2,detalle.getIdArticulo());
-            ps.setInt(3,detalle.getCantidad());
-            ps.setDouble(4,detalle.getPrecio());
+        List<DetalleInventario> lista = new ArrayList<>();
 
-            guardado = ps.executeUpdate() > 0;
+        String sql = "SELECT ID_DETALLE, NUMERO_COMPROBANTE, "
+                   + "ID_ARTICULO, CANTIDAD, PRECIO "
+                   + "FROM DETALLE_INVENTARIO "
+                   + "WHERE NUMERO_COMPROBANTE = ? "
+                   + "ORDER BY ID_DETALLE";
 
-            ps.close();
-            cn.close();
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
 
-        } catch (SQLException e) {
-            System.out.println("Error guardar detalle: "+ e.getMessage());
+            ps.setInt(1, numero);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+
+                    DetalleInventario detalle =
+                            new DetalleInventario();
+
+                    detalle.setIdDetalle(
+                            rs.getInt("ID_DETALLE"));
+
+                    detalle.setNumeroComprobante(
+                            rs.getInt("NUMERO_COMPROBANTE"));
+
+                    detalle.setIdArticulo(
+                            rs.getInt("ID_ARTICULO"));
+
+                    detalle.setCantidad(
+                            rs.getInt("CANTIDAD"));
+
+                    detalle.setPrecio(
+                            rs.getDouble("PRECIO"));
+
+                    lista.add(detalle);
+                }
+            }
         }
 
-        return guardado;
+        return lista;
+    }
+
+    // ELIMINAR TODOS LOS DETALLES DE UN COMPROBANTE
+    public boolean eliminarPorComprobante(
+            int numero, Connection cn) throws SQLException {
+
+        String sql = "DELETE FROM DETALLE_INVENTARIO "
+                   + "WHERE NUMERO_COMPROBANTE = ?";
+
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, numero);
+
+            ps.executeUpdate();
+
+            return true;
+        }
     }
 }

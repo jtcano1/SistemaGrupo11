@@ -1,13 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
+
 package presentacion.inventarios;
 
-/**
- *
- * @author jtcanop
- */
+import datos.inventarios.TipoMovimientoDAO;
+import entidades.inventarios.TipoMovimiento;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 public class FrmTipoMovimiento extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmTipoMovimiento.class.getName());
@@ -15,9 +14,22 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
     /**
      * Creates new form FrmArticulo
      */
-    public FrmTipoMovimiento() {
-        initComponents();
-    }
+public FrmTipoMovimiento() {
+    initComponents();
+
+    cargarTabla();
+    tblTipoMovimiento.addMouseListener(
+        new java.awt.event.MouseAdapter() {
+
+            @Override
+            public void mouseClicked(
+                    java.awt.event.MouseEvent evt) {
+
+                tblTipoMovimientoMouseClicked(evt);
+            }
+        });
+}
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -42,7 +54,7 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
         btnBuscar = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblArticulos = new javax.swing.JTable();
+        tblTipoMovimiento = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -54,23 +66,30 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
 
         jLabel3.setText("Signo:");
 
-        txtCodigo.setEditable(false);
         txtCodigo.addActionListener(this::txtCodigoActionPerformed);
 
+        txtNombre.addActionListener(this::txtNombreActionPerformed);
+
+        txtSigno.addActionListener(this::txtSignoActionPerformed);
+
         btnNuevo.setText("Nuevo");
+        btnNuevo.addActionListener(this::btnNuevoActionPerformed);
 
         btnGuardar.setText("Guardar");
+        btnGuardar.addActionListener(this::btnGuardarActionPerformed);
 
         btnModificar.setText("Modificar");
+        btnModificar.addActionListener(this::btnModificarActionPerformed);
 
         btnEliminar.setText("Eliminar");
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
         jLabel4.setText("GESTIÓN DE TIPOS DE MOVIMIENTO");
 
-        tblArticulos.setModel(new javax.swing.table.DefaultTableModel(
+        tblTipoMovimiento.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null},
                 {null, null, null},
@@ -81,7 +100,7 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
                 "Código", "Nombre", "Signo"
             }
         ));
-        jScrollPane1.setViewportView(tblArticulos);
+        jScrollPane1.setViewportView(tblTipoMovimiento);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -179,8 +198,140 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         // TODO add your handling code here:
+        int codigo = Integer.parseInt(txtCodigo.getText());
+        
+        TipoMovimientoDAO dao =
+            new TipoMovimientoDAO();
+        
+        if (dao.eliminar(codigo)) {
+            JOptionPane.showMessageDialog(
+                this, "Eliminado correctamente");
+
+        cargarTabla();
+
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtSigno.setText("");
+        
+        } else {
+            JOptionPane.showMessageDialog(
+                this, "Error al eliminar");
+    }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
+    private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
+        // TODO add your handling code here:
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtSigno.setText("");
+    }//GEN-LAST:event_btnNuevoActionPerformed
+
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        // TODO add your handling code here:
+        TipoMovimiento tipo =
+            new TipoMovimiento();
+        
+        tipo.setNombre(txtNombre.getText());
+        tipo.setSigno(Integer.parseInt(txtSigno.getText()));
+        
+        TipoMovimientoDAO dao =new TipoMovimientoDAO();
+        
+        if (dao.guardar(tipo)) {
+            JOptionPane.showMessageDialog(
+                this, "Tipo movimiento guardado");
+        
+            cargarTabla();
+        
+    } else {
+
+        JOptionPane.showMessageDialog(this, "Error al guardar");
+    }
+        
+    }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        // TODO add your handling code here:
+        int codigo =Integer.parseInt(txtCodigo.getText());
+        
+        TipoMovimientoDAO dao =new TipoMovimientoDAO();
+        TipoMovimiento tipo = dao.buscar(codigo);
+        
+        if (tipo != null) {
+            txtNombre.setText(tipo.getNombre());
+            txtSigno.setText(String.valueOf(
+                        tipo.getSigno()));
+    
+        } else {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "No encontrado");
+    }
+
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
+        // TODO add your handling code here:
+         TipoMovimiento tipo =new TipoMovimiento();
+         
+         tipo.setCodigo(Integer.parseInt(
+                    txtCodigo.getText()));
+         tipo.setNombre(
+            txtNombre.getText());
+         tipo.setSigno(Integer.parseInt(
+                    txtSigno.getText()));
+         
+         TipoMovimientoDAO dao = new TipoMovimientoDAO();
+         
+         if (dao.modificar(tipo)) {
+             JOptionPane.showMessageDialog(
+                this, "Modificado correctamente");
+             
+             cargarTabla();
+         
+         } else {
+             JOptionPane.showMessageDialog(
+                this, "Error al modificar");
+    }
+    }//GEN-LAST:event_btnModificarActionPerformed
+
+    private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtNombreActionPerformed
+
+    private void txtSignoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSignoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSignoActionPerformed
+
+    private void cargarTabla() {
+        DefaultTableModel modelo =
+            (DefaultTableModel)
+                    tblTipoMovimiento.getModel();
+        
+        modelo.setRowCount(0);
+        
+        TipoMovimientoDAO dao = new TipoMovimientoDAO();     
+        List<TipoMovimiento> lista = dao.listar();
+        
+        for (TipoMovimiento t : lista) {
+            modelo.addRow(new Object[]{
+                t.getCodigo(),
+                t.getNombre(),
+                t.getSigno()
+            });
+    }
+}
+    private void tblTipoMovimientoMouseClicked(java.awt.event.MouseEvent evt) {
+        
+        int fila = tblTipoMovimiento.getSelectedRow();
+        
+        txtCodigo.setText(tblTipoMovimiento.getValueAt(
+                    fila,0).toString());
+        txtNombre.setText(tblTipoMovimiento.getValueAt(
+                    fila,1).toString());
+        txtSigno.setText(tblTipoMovimiento.getValueAt(
+                    fila,2).toString());
+}
     /**
      * @param args the command line arguments
      */
@@ -218,7 +369,7 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tblArticulos;
+    private javax.swing.JTable tblTipoMovimiento;
     private javax.swing.JTextField txtCodigo;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtSigno;

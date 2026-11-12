@@ -7,6 +7,10 @@ public class Solicitud {
     private String operacion;
     // Dato adicional asociado a la operación, Ejemplo: código del artículo.
     private String dato;
+    
+    // Permite transportar entidades o listas
+    // entre cliente y servidor.
+    private Object objeto;
 
     public Solicitud() {
     }
@@ -39,5 +43,11 @@ public class Solicitud {
     }
     public void setDato(String dato) {
         this.dato = dato;
+    }
+    public Object getObjeto() {
+        return objeto;
+    }
+    public void setObjeto(Object objeto) {
+        this.objeto = objeto;
     }
 }

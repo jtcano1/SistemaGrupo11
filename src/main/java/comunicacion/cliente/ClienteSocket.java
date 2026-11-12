@@ -16,7 +16,7 @@ public class ClienteSocket {
                     new DataOutputStream(
                             socket.getOutputStream());
 
-            salida.writeUTF("INVENTARIO|MODIFICAR_ARTICULO|41|TABLET_SOCKET_PRO|175");
+            salida.writeUTF("INVENTARIO|MODIFICAR_COMPROBANTE|21|12/11/2026|41|2|15|25");
 
             DataInputStream entrada =
                     new DataInputStream(

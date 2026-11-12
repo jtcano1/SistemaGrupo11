@@ -6,16 +6,24 @@ package presentacion.inventarios;
 import datos.inventarios.ArticuloDAO;
 import entidades.inventarios.Articulo;
 import javax.swing.JOptionPane;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
 
 public class FrmArticulo extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmArticulo.class.getName());
 
-    /**
-     * Creates new form FrmArticulo
-     */
     public FrmArticulo() {
         initComponents();
+        cargarTabla();
+        
+        tblArticulos.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblArticulosMouseClicked(evt);
+            }
+        }
+    );
     }
 
 
@@ -49,20 +57,22 @@ public class FrmArticulo extends javax.swing.JFrame {
 
         jLabel3.setText("Precio:");
 
-        txtCodigo.setEditable(false);
         txtCodigo.addActionListener(this::txtCodigoActionPerformed);
 
         btnNuevo.setText("Nuevo");
+        btnNuevo.addActionListener(this::btnNuevoActionPerformed);
 
         btnGuardar.setText("Guardar");
         btnGuardar.addActionListener(this::btnGuardarActionPerformed);
 
         btnModificar.setText("Modificar");
+        btnModificar.addActionListener(this::btnModificarActionPerformed);
 
         btnEliminar.setText("Eliminar");
         btnEliminar.addActionListener(this::btnEliminarActionPerformed);
 
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
         jLabel4.setText("MÓDULO DE INVENTARIOS - ARTÍCULOS ");
 
@@ -177,7 +187,23 @@ public class FrmArticulo extends javax.swing.JFrame {
     }//GEN-LAST:event_txtCodigoActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
-        // TODO add your handling code here:
+
+    int codigo = Integer.parseInt(txtCodigo.getText());
+    ArticuloDAO dao = new ArticuloDAO();
+    if (dao.eliminar(codigo)) {
+        JOptionPane.showMessageDialog(this,
+                "Artículo eliminado correctamente");
+        cargarTabla();
+
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtPrecio.setText("");
+
+    } else {
+
+        JOptionPane.showMessageDialog(this,
+                "Error al eliminar");
+            }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
@@ -192,7 +218,7 @@ public class FrmArticulo extends javax.swing.JFrame {
             
             JOptionPane.showMessageDialog(
                 this, "Artículo guardado correctamente" );
-        
+            cargarTabla();
         } else {
 
         JOptionPane.showMessageDialog(
@@ -201,6 +227,77 @@ public class FrmArticulo extends javax.swing.JFrame {
 }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        // TODO add your handling code here:
+            int codigo = Integer.parseInt(txtCodigo.getText());
+            
+            ArticuloDAO dao = new ArticuloDAO();
+            Articulo articulo = dao.buscar(codigo);
+            
+            if (articulo != null) {
+                txtNombre.setText(articulo.getNombre());
+                txtPrecio.setText(String.valueOf(articulo.getPrecio()));
+            
+            } else {
+                JOptionPane.showMessageDialog(this,"Artículo no encontrado");
+            }
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
+        // TODO add your handling code here:
+        Articulo articulo = new Articulo();
+        articulo.setCodigo(Integer.parseInt(txtCodigo.getText()));
+        articulo.setNombre(txtNombre.getText());
+        articulo.setPrecio(Double.parseDouble(txtPrecio.getText()));
+        
+        ArticuloDAO dao = new ArticuloDAO();
+        
+        if (dao.modificar(articulo)) {
+            JOptionPane.showMessageDialog(this,
+                "Artículo modificado correctamente");
+            cargarTabla();
+        
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Error al modificar");
+        }
+        
+    }//GEN-LAST:event_btnModificarActionPerformed
+
+    private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
+        // TODO add your handling code here:
+            txtCodigo.setText("");
+            txtNombre.setText("");
+            txtPrecio.setText("");
+    }//GEN-LAST:event_btnNuevoActionPerformed
+
+    private void cargarTabla() {
+
+    DefaultTableModel modelo =
+            (DefaultTableModel) tblArticulos.getModel();
+    modelo.setRowCount(0);
+    ArticuloDAO dao = new ArticuloDAO();
+
+    List<Articulo> lista = dao.listar();
+    for (Articulo a : lista) {
+        modelo.addRow(new Object[]{
+            a.getCodigo(),
+            a.getNombre(),
+            a.getPrecio()
+        });
+    }
+}
+    private void tblArticulosMouseClicked(java.awt.event.MouseEvent evt) {
+
+    int fila = tblArticulos.getSelectedRow();
+
+    txtCodigo.setText(
+            tblArticulos.getValueAt(fila, 0).toString());
+    txtNombre.setText(
+            tblArticulos.getValueAt(fila, 1).toString());
+    txtPrecio.setText(
+            tblArticulos.getValueAt(fila, 2).toString());
+}
     /**
      * @param args the command line arguments
      */

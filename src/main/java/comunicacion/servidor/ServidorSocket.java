@@ -6,6 +6,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import datos.inventarios.ArticuloDAO;
 import entidades.inventarios.Articulo;
+import comunicacion.servidor.ProcesadorInventario;
+
 
 public class ServidorSocket {
 
@@ -41,36 +43,34 @@ public class ServidorSocket {
             String[] partes = mensaje.split("\\|");
             String modulo = partes[0];
             String operacion = partes[1];
-            String dato = partes[2];
+            // Reconstruir toda la información enviada
+            // después del módulo y la operación.
+            String dato = "";
             
-            // Determinar qué operación debe ejecutar el servidor
-            // de acuerdo al módulo y la solicitud recibida.
-            if (modulo.equals("INVENTARIO")
-                    && operacion.equals("BUSCAR_ARTICULO")) {
-                
-                int codigo = Integer.parseInt(dato);
-                ArticuloDAO dao = new ArticuloDAO();
-                Articulo articulo = dao.buscar(codigo);
-                
-                if (articulo != null) {
-                    
-                    String respuestaTexto =
-                            articulo.getCodigo()
-                            + "|"
-                            + articulo.getNombre()
-                            + "|"
-                            + articulo.getPrecio();
-                    
-                    salida.writeUTF(respuestaTexto);
-                
-                } else {
-                    
-                    salida.writeUTF("NO_ENCONTRADO");
+            for (int i = 2; i < partes.length; i++) {
+                if (i > 2) {
+                    dato += "|";
                 }
-            
-                } else {
-                        salida.writeUTF("OPERACION_NO_VALIDA");
+                
+                dato += partes[i];
             }
+            
+        // Delegar las operaciones del módulo Inventario
+        // al procesador correspondiente.
+        if (modulo.equals("INVENTARIO")) {
+            ProcesadorInventario procesador =
+                    new ProcesadorInventario();
+            
+            String respuesta =
+                    procesador.procesar(
+                    operacion,dato);
+            
+            salida.writeUTF(respuesta);
+        
+        } else {
+            
+            salida.writeUTF("MODULO_NO_VALIDO");
+        }
             
             System.out.println("Modulo: " + modulo);
             System.out.println("Operacion: " + operacion);

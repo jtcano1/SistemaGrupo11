@@ -4,12 +4,13 @@
  */
 package entidades.contabilidad;
 
+import java.io.Serializable;
 /**
  *
  * @author USER
  */
-public class TipoCuenta {
-        private int codigo;
+public class TipoCuenta implements Serializable {
+    private int codigo;
     private String nombre;
 
     public TipoCuenta() {
@@ -20,24 +21,25 @@ public class TipoCuenta {
         this.nombre = nombre;
     }
 
-    public int getCodigo() {
-        return codigo;
+    public int getCodigo() { 
+        return codigo; 
     }
-
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
+    
+    public void setCodigo(int codigo) { 
+        this.codigo = codigo; 
     }
-
-    public String getNombre() {
-        return nombre;
+    
+    public String getNombre() { 
+        return nombre; 
     }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    
+    public void setNombre(String nombre) { 
+        this.nombre = nombre; 
     }
 
     @Override
-    public String toString() {
-        return nombre;
-    }   
+    public String toString() { 
+        return nombre; 
+    }
 }
+

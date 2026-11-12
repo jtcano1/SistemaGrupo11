@@ -11,6 +11,8 @@ package entidades.contabilidad;
 import java.io.Serializable;
 
 public class DetalleComprobante implements Serializable {
+    private int idDetalle;
+    private int numeroComprobante;
     private Cuenta cuenta;
     private double debe;
     private double haber;
@@ -24,27 +26,45 @@ public class DetalleComprobante implements Serializable {
         this.haber = haber;
     }
 
-    public Cuenta getCuenta() { 
-        return cuenta; 
+    // --- Estos 2 son los que te faltaban y por eso salía rojo ---
+    public int getIdDetalle() {
+        return idDetalle;
     }
-    
-    public void setCuenta(Cuenta cuenta) { 
-        this.cuenta = cuenta; 
+
+    public void setIdDetalle(int idDetalle) {
+        this.idDetalle = idDetalle;
     }
-    
-    public double getDebe() { 
-        return debe; 
+
+    public int getNumeroComprobante() {
+        return numeroComprobante;
     }
-    
-    public void setDebe(double debe) { 
-        this.debe = debe; 
+
+    public void setNumeroComprobante(int numeroComprobante) {
+        this.numeroComprobante = numeroComprobante;
     }
-    
-    public double getHaber() { 
-        return haber; 
+    // -----------------------------------------------------------
+
+    public Cuenta getCuenta() {
+        return cuenta;
     }
-    
-    public void setHaber(double haber) { 
-        this.haber = haber; 
+
+    public void setCuenta(Cuenta cuenta) {
+        this.cuenta = cuenta;
+    }
+
+    public double getDebe() {
+        return debe;
+    }
+
+    public void setDebe(double debe) {
+        this.debe = debe;
+    }
+
+    public double getHaber() {
+        return haber;
+    }
+
+    public void setHaber(double haber) {
+        this.haber = haber;
     }
 }

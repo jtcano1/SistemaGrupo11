@@ -8,6 +8,9 @@ import java.util.List;
 import entidades.inventarios.CabeceraInventario;
 import negocio.inventarios.InventarioBL;
 import entidades.inventarios.DetalleInventario;
+import entidades.inventarios.ColumnaMovimiento;
+import entidades.inventarios.MovimientoMatriz;
+import negocio.inventarios.ReporteMatrizBL;
 
 public class ProcesadorInventario {
 
@@ -421,6 +424,76 @@ public class ProcesadorInventario {
             } catch (Exception e) {
                 return "ERROR|"
                         + e.getMessage();
+            }
+        }
+                // Listar tipos de movimiento para el reporte de matriz.
+        if (operacion.equals("LISTAR_TIPOS_MATRIZ")) {
+
+            ReporteMatrizBL reporteBL =
+                    new ReporteMatrizBL();
+
+            List<ColumnaMovimiento> tipos =
+                    reporteBL.listarTipos();
+
+            StringBuilder respuesta = new StringBuilder();
+
+            for (ColumnaMovimiento tipo : tipos) {
+
+                respuesta.append(tipo.getCodigo())
+                        .append("|")
+                        .append(tipo.getNombre())
+                        .append("\n");
+            }
+
+            return respuesta.toString();
+        }
+
+        // Listar movimientos para el reporte de matriz.
+
+        if (operacion.equals("LISTAR_MOVIMIENTOS_MATRIZ")) {
+
+            try {
+
+                String[] fechas = dato.split("\\|");
+
+                java.text.SimpleDateFormat formato =
+                        new java.text.SimpleDateFormat("dd/MM/yyyy");
+
+                formato.setLenient(false);
+
+                java.util.Date desde =
+                        formato.parse(fechas[0]);
+
+                java.util.Date hasta =
+                        formato.parse(fechas[1]);
+
+                ReporteMatrizBL reporteBL =
+                        new ReporteMatrizBL();
+
+                List<MovimientoMatriz> movimientos =
+                        reporteBL.listarMovimientos(desde, hasta);
+
+                StringBuilder respuesta = new StringBuilder();
+
+                for (MovimientoMatriz movimiento : movimientos) {
+
+                    respuesta.append(movimiento.getCodigoArticulo())
+                            .append("|")
+                            .append(movimiento.getArticulo())
+                            .append("|")
+                            .append(movimiento.getCodigoTipoMovimiento())
+                            .append("|")
+                            .append(movimiento.getTipoMovimiento())
+                            .append("|")
+                            .append(movimiento.getCantidad())
+                            .append("\n");
+                }
+
+                return respuesta.toString();
+
+            } catch (Exception e) {
+
+                return "ERROR|" + e.getMessage();
             }
         }
         

@@ -1,90 +1,92 @@
+
 package comunicacion.servidor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import datos.inventarios.ArticuloDAO;
-import entidades.inventarios.Articulo;
-import comunicacion.servidor.ProcesadorInventario;
-
 
 public class ServidorSocket {
 
     public static void main(String[] args) {
 
-        try {
+        try (ServerSocket servidor = new ServerSocket(5000)) {
 
-            ServerSocket servidor =
-                    new ServerSocket(5000);
+            System.out.println("Servidor iniciado en puerto 5000");
+            System.out.println("Esperando conexiones...");
 
-            System.out.println(
-                    "Servidor iniciado en puerto 5000");
+            // Mantener el servidor activo para atender varios clientes.
+            while (true) {
 
-            Socket cliente =
-                    servidor.accept();
+                try (Socket cliente = servidor.accept()) {
 
-            System.out.println(
-                    "Cliente conectado");
+                    System.out.println("Cliente conectado");
 
-            DataInputStream entrada =
-                    new DataInputStream(
-                            cliente.getInputStream());
-            DataOutputStream salida =
-                    new DataOutputStream(
-                            cliente.getOutputStream());
+                    DataInputStream entrada =
+                            new DataInputStream(cliente.getInputStream());
 
-            String mensaje = entrada.readUTF();
-            
-            System.out.println("Mensaje recibido: "
-                            + mensaje);
-            
-            // Separar la información enviada por el cliente.
-            String[] partes = mensaje.split("\\|");
-            String modulo = partes[0];
-            String operacion = partes[1];
-            // Reconstruir toda la información enviada
-            // después del módulo y la operación.
-            String dato = "";
-            
-            for (int i = 2; i < partes.length; i++) {
-                if (i > 2) {
-                    dato += "|";
+                    DataOutputStream salida =
+                            new DataOutputStream(cliente.getOutputStream());
+
+                    String mensaje = entrada.readUTF();
+
+                    System.out.println("Mensaje recibido: " + mensaje);
+
+                    String[] partes = mensaje.split("\\|");
+
+                    if (partes.length < 2) {
+                        salida.writeUTF("SOLICITUD_INVALIDA");
+                        continue;
+                    }
+
+                    String modulo = partes[0];
+                    String operacion = partes[1];
+
+                    // Reconstruir los datos enviados por el cliente.
+                    StringBuilder dato = new StringBuilder();
+
+                    for (int i = 2; i < partes.length; i++) {
+                        if (i > 2) {
+                            dato.append("|");
+                        }
+
+                        dato.append(partes[i]);
+                    }
+
+                    String respuesta;
+
+                    if (modulo.equals("INVENTARIO")) {
+
+                        ProcesadorInventario procesador =
+                                new ProcesadorInventario();
+
+                        respuesta = procesador.procesar(
+                                operacion, dato.toString());
+
+                    } else {
+
+                        respuesta = "MODULO_NO_VALIDO";
+                    }
+
+                    salida.writeUTF(respuesta);
+
+                    System.out.println("Modulo: " + modulo);
+                    System.out.println("Operacion: " + operacion);
+                    System.out.println("Dato: " + dato);
+                    System.out.println("Respuesta enviada: " + respuesta);
+
+                } catch (Exception e) {
+
+                    System.out.println(
+                            "Error al atender al cliente: " + e.getMessage());
                 }
-                
-                dato += partes[i];
+
+                System.out.println("Esperando nueva conexión...");
             }
-            
-        // Delegar las operaciones del módulo Inventario
-        // al procesador correspondiente.
-        if (modulo.equals("INVENTARIO")) {
-            ProcesadorInventario procesador =
-                    new ProcesadorInventario();
-            
-            String respuesta =
-                    procesador.procesar(
-                    operacion,dato);
-            
-            salida.writeUTF(respuesta);
-        
-        } else {
-            
-            salida.writeUTF("MODULO_NO_VALIDO");
-        }
-            
-            System.out.println("Modulo: " + modulo);
-            System.out.println("Operacion: " + operacion);
-            System.out.println("Dato: " + dato);
-
-
-            cliente.close();
-            servidor.close();
 
         } catch (Exception e) {
 
-            System.out.println(
-                    "Error: "
-                            + e.getMessage());
+            System.out.println("Error en el servidor: " + e.getMessage());
         }
     }
 }

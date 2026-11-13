@@ -3,18 +3,25 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package presentacion.inventarios;
-import datos.inventarios.ArticuloDAO;
+import comunicacion.cliente.ClienteArticulo;
 import entidades.inventarios.Articulo;
 import javax.swing.JOptionPane;
 import java.util.List;
 import javax.swing.table.DefaultTableModel;
 
 public class FrmArticulo extends javax.swing.JFrame {
+
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmArticulo.class.getName());
+    
+    private final ClienteArticulo clienteArticulo =
+            new ClienteArticulo();
 
     public FrmArticulo() {
         initComponents();
+        
+        // Impedir que el usuario escriba manualmente el código
+        txtCodigo.setEditable(false);
         cargarTabla();
         
         tblArticulos.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -188,11 +195,31 @@ public class FrmArticulo extends javax.swing.JFrame {
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
 
-    int codigo = Integer.parseInt(txtCodigo.getText());
-    ArticuloDAO dao = new ArticuloDAO();
-    if (dao.eliminar(codigo)) {
+try {
+
+    if (txtCodigo.getText().trim().isEmpty()) {
         JOptionPane.showMessageDialog(this,
-                "Artículo eliminado correctamente");
+                "Seleccione un artículo para eliminar.");
+        return;
+    }
+
+    int codigo = Integer.parseInt(txtCodigo.getText().trim());
+
+    int opcion = JOptionPane.showConfirmDialog(
+            this,
+            "¿Está seguro de eliminar este artículo?",
+            "Confirmar eliminación",
+            JOptionPane.YES_NO_OPTION);
+
+    if (opcion != JOptionPane.YES_OPTION) {
+        return;
+    }
+
+    if (clienteArticulo.eliminar(codigo)) {
+
+        JOptionPane.showMessageDialog(this,
+                "Artículo eliminado correctamente.");
+
         cargarTabla();
 
         txtCodigo.setText("");
@@ -202,65 +229,128 @@ public class FrmArticulo extends javax.swing.JFrame {
     } else {
 
         JOptionPane.showMessageDialog(this,
-                "Error al eliminar");
-            }
+                "No se pudo eliminar el artículo.");
+    }
+
+} catch (NumberFormatException e) {
+
+    JOptionPane.showMessageDialog(this,
+            "Código inválido.");
+}
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         // TODO add your handling code here:
-        Articulo articulo = new Articulo();
-        
-        articulo.setNombre(txtNombre.getText());
-        articulo.setPrecio(Double.parseDouble(txtPrecio.getText()));
-        
-        ArticuloDAO dao = new ArticuloDAO();
-        if (dao.guardar(articulo)) {
-            
-            JOptionPane.showMessageDialog(
-                this, "Artículo guardado correctamente" );
-            cargarTabla();
-        } else {
+try {
 
-        JOptionPane.showMessageDialog(
-                this,"Error al guardar");
+    String nombre = txtNombre.getText().trim();
 
+    if (nombre.isEmpty() || txtPrecio.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+                "Ingrese el nombre y el precio del artículo.");
+        return;
+    }
+
+    Articulo articulo = new Articulo();
+
+    articulo.setNombre(nombre);
+    articulo.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
+
+    if (clienteArticulo.guardar(articulo)) {
+
+        JOptionPane.showMessageDialog(this,
+                "Artículo guardado correctamente.");
+
+        cargarTabla();
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtPrecio.setText("");
+
+    } else {
+
+        JOptionPane.showMessageDialog(this,
+                "No se pudo guardar el artículo.");
+    }
+
+} catch (NumberFormatException e) {
+
+    JOptionPane.showMessageDialog(this,
+            "Ingrese un precio numérico válido.");
 }
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         // TODO add your handling code here:
-            int codigo = Integer.parseInt(txtCodigo.getText());
-            
-            ArticuloDAO dao = new ArticuloDAO();
-            Articulo articulo = dao.buscar(codigo);
-            
-            if (articulo != null) {
-                txtNombre.setText(articulo.getNombre());
-                txtPrecio.setText(String.valueOf(articulo.getPrecio()));
-            
-            } else {
-                JOptionPane.showMessageDialog(this,"Artículo no encontrado");
-            }
+        try {
+
+    if (txtCodigo.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+                "Seleccione o ingrese un artículo para buscar.");
+        return;
+    }
+
+    int codigo = Integer.parseInt(txtCodigo.getText().trim());
+
+    Articulo articulo = clienteArticulo.buscar(codigo);
+
+    if (articulo != null) {
+
+        txtNombre.setText(articulo.getNombre());
+        txtPrecio.setText(String.valueOf(articulo.getPrecio()));
+
+    } else {
+
+        JOptionPane.showMessageDialog(this,
+                "Artículo no encontrado.");
+    }
+
+} catch (NumberFormatException e) {
+
+    JOptionPane.showMessageDialog(this,
+            "El código debe ser numérico.");
+}
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
         // TODO add your handling code here:
-        Articulo articulo = new Articulo();
-        articulo.setCodigo(Integer.parseInt(txtCodigo.getText()));
-        articulo.setNombre(txtNombre.getText());
-        articulo.setPrecio(Double.parseDouble(txtPrecio.getText()));
-        
-        ArticuloDAO dao = new ArticuloDAO();
-        
-        if (dao.modificar(articulo)) {
-            JOptionPane.showMessageDialog(this,
-                "Artículo modificado correctamente");
-            cargarTabla();
-        
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Error al modificar");
-        }
+try {
+
+    if (txtCodigo.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+                "Seleccione un artículo.");
+        return;
+    }
+
+    Articulo articulo = new Articulo();
+
+    articulo.setCodigo(Integer.parseInt(txtCodigo.getText().trim()));
+    articulo.setNombre(txtNombre.getText().trim());
+    articulo.setPrecio(Double.parseDouble(txtPrecio.getText().trim()));
+
+    if (articulo.getNombre().isEmpty()) {
+        JOptionPane.showMessageDialog(this,
+                "Ingrese el nombre del artículo.");
+        return;
+    }
+
+    if (clienteArticulo.modificar(articulo)) {
+
+        JOptionPane.showMessageDialog(this,
+                "Artículo modificado correctamente.");
+
+        cargarTabla();
+
+    } else {
+
+        JOptionPane.showMessageDialog(this,
+                "No se pudo modificar el artículo.");
+    }
+
+} catch (NumberFormatException e) {
+
+    JOptionPane.showMessageDialog(this,
+            "Verifique el código y el precio.");
+}
         
     }//GEN-LAST:event_btnModificarActionPerformed
 
@@ -271,22 +361,26 @@ public class FrmArticulo extends javax.swing.JFrame {
             txtPrecio.setText("");
     }//GEN-LAST:event_btnNuevoActionPerformed
 
-    private void cargarTabla() {
+private void cargarTabla() {
 
     DefaultTableModel modelo =
             (DefaultTableModel) tblArticulos.getModel();
-    modelo.setRowCount(0);
-    ArticuloDAO dao = new ArticuloDAO();
 
-    List<Articulo> lista = dao.listar();
-    for (Articulo a : lista) {
+    modelo.setRowCount(0);
+
+    List<Articulo> lista = clienteArticulo.listar();
+
+    for (Articulo articulo : lista) {
+
         modelo.addRow(new Object[]{
-            a.getCodigo(),
-            a.getNombre(),
-            a.getPrecio()
+            articulo.getCodigo(),
+            articulo.getNombre(),
+            articulo.getPrecio()
         });
     }
 }
+
+
     private void tblArticulosMouseClicked(java.awt.event.MouseEvent evt) {
 
     int fila = tblArticulos.getSelectedRow();

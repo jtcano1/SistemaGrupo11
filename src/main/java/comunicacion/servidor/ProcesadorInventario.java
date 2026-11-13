@@ -11,6 +11,12 @@ import entidades.inventarios.DetalleInventario;
 import entidades.inventarios.ColumnaMovimiento;
 import entidades.inventarios.MovimientoMatriz;
 import negocio.inventarios.ReporteMatrizBL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import entidades.inventarios.SaldoArticulo;
+import negocio.inventarios.ReporteInventarioBL;
+import java.util.Date;
+
 
 public class ProcesadorInventario {
 
@@ -301,131 +307,221 @@ public class ProcesadorInventario {
                     ? "ELIMINADO"
                     : "NO_ELIMINADO";
         }
+    
+        
         // Buscar cabecera de comprobante.
-        if (operacion.equals(
-                "BUSCAR_CABECERA")) {
-            
-            int numero =Integer.parseInt(dato);
-            InventarioBL bl =new InventarioBL();
-            CabeceraInventario cabecera = bl.buscarCabecera(numero);
+        if (operacion.equals("BUSCAR_CABECERA")) {
+
+            int numero = Integer.parseInt(dato);
+
+            InventarioBL bl = new InventarioBL();
+
+            CabeceraInventario cabecera =
+                    bl.buscarCabecera(numero);
+
             if (cabecera != null) {
-                
-                return cabecera.getNumero()
-                        + "|"
-                        + cabecera.getFecha()
-                        + "|"
+
+                SimpleDateFormat formato =
+                        new SimpleDateFormat("dd/MM/yyyy");
+
+                return cabecera.getNumero() + "|"
+                        + formato.format(cabecera.getFecha()) + "|"
                         + cabecera.getIdTipoMovimiento();
             }
 
             return "NO_ENCONTRADO";
         }
+
         // Listar detalles de un comprobante.
         if (operacion.equals("LISTAR_DETALLES")) {
-            int numero =Integer.parseInt(dato);
-            InventarioBL bl =new InventarioBL();
-            
+
+            int numero = Integer.parseInt(dato);
+
+            InventarioBL bl = new InventarioBL();
+
             List<DetalleInventario> detalles =
                     bl.listarDetalles(numero);
-            
-            if (detalles == null
-                    || detalles.isEmpty()) {
+
+            if (detalles == null || detalles.isEmpty()) {
                 return "SIN_DETALLES";
             }
-            StringBuilder respuesta =new StringBuilder();
-            
+
+            StringBuilder respuesta = new StringBuilder();
+
             for (DetalleInventario detalle : detalles) {
-                respuesta.append(
-                        detalle.getIdArticulo())
+
+                respuesta.append(detalle.getIdArticulo())
                         .append("|")
                         .append(detalle.getCantidad())
                         .append("|")
                         .append(detalle.getPrecio())
                         .append("\n");
             }
+
             return respuesta.toString();
         }
+
         // Eliminar comprobante completo.
         if (operacion.equals("ELIMINAR_COMPROBANTE")) {
-            int numero =Integer.parseInt(dato);
-            
-            InventarioBL bl =new InventarioBL();
-            boolean eliminado =bl.eliminar(numero);
-            return eliminado
-                    ? "ELIMINADO": "NO_ELIMINADO";
+
+            int numero = Integer.parseInt(dato);
+
+            InventarioBL bl = new InventarioBL();
+
+            boolean eliminado = bl.eliminar(numero);
+
+            return eliminado ? "ELIMINADO" : "NO_ELIMINADO";
         }
-        // Guardar comprobante simple.
-        if (operacion.equals(
-                "GUARDAR_COMPROBANTE")) {
-            
-            String[] datos =dato.split("\\|");
-            
-            java.text.SimpleDateFormat formato =
-                    new java.text.SimpleDateFormat(
-                            "dd/MM/yyyy");
-            
-            CabeceraInventario cabecera = new CabeceraInventario();
-            
+
+        // Guardar comprobante con uno o varios detalles.
+        // Formato:
+        // FECHA|TIPO|CANTIDAD_DETALLES|ARTICULO|CANTIDAD|PRECIO...
+        if (operacion.equals("GUARDAR_COMPROBANTE")) {
+
             try {
-                cabecera.setFecha(formato.parse(datos[0]));
-                cabecera.setIdTipoMovimiento(Integer.parseInt(datos[1]));
-                DetalleInventario detalle =new DetalleInventario();
-                detalle.setIdArticulo(Integer.parseInt(datos[2]));
-                detalle.setCantidad(Integer.parseInt(datos[3]));
-                detalle.setPrecio(Double.parseDouble(datos[4]));
-                
-                List<DetalleInventario> detalles =
-                        new java.util.ArrayList<>();
-                
-                detalles.add(detalle);
-                
-                InventarioBL bl =new InventarioBL();
-                int numero =
-                        bl.guardar(
-                                cabecera, detalles);
-                
-                if (numero > 0) {
-                    return "GUARDADO|"
-                            + numero;
+
+                String[] datos = dato.split("\\|");
+
+                if (datos.length < 6) {
+                    return "ERROR|Datos incompletos";
                 }
-                return "NO_GUARDADO";
-            
-            } catch (Exception e) {
-                return "ERROR|"
-                        + e.getMessage();
-            }
-        }
-        
-        // Modificar comprobante simple.
-        if (operacion.equals("MODIFICAR_COMPROBANTE")) {
-            
-            String[] datos =dato.split("\\|");
-            java.text.SimpleDateFormat formato =
-                    new java.text.SimpleDateFormat(
-                            "dd/MM/yyyy");
-            try {
-                CabeceraInventario cabecera =new CabeceraInventario();
-                cabecera.setNumero(Integer.parseInt(datos[0]));
-                cabecera.setFecha(formato.parse(datos[1]));
-                cabecera.setIdTipoMovimiento(Integer.parseInt(datos[2]));
-                DetalleInventario detalle =new DetalleInventario();
-                detalle.setIdArticulo(Integer.parseInt(datos[3]));
-                detalle.setCantidad(Integer.parseInt(datos[4]));
-                detalle.setPrecio(Double.parseDouble(datos[5]));
-                
+
+                SimpleDateFormat formato =
+                        new SimpleDateFormat("dd/MM/yyyy");
+
+                formato.setLenient(false);
+
+                CabeceraInventario cabecera =
+                        new CabeceraInventario();
+
+                cabecera.setFecha(formato.parse(datos[0]));
+
+                cabecera.setIdTipoMovimiento(
+                        Integer.parseInt(datos[1]));
+
+                int cantidadDetalles =
+                        Integer.parseInt(datos[2]);
+
+                if (cantidadDetalles <= 0
+                        || datos.length != 3 + cantidadDetalles * 3) {
+                    return "ERROR|Cantidad de detalles incorrecta";
+                }
+
                 List<DetalleInventario> detalles =
-                        new java.util.ArrayList<>();
-                
-                detalles.add(detalle);
-                InventarioBL bl =new InventarioBL();
-                boolean actualizado = bl.modificar(cabecera,detalles);
-                return actualizado
-                        ? "MODIFICADO"
-                        : "NO_MODIFICADO";
+                        new ArrayList<>();
+
+                for (int i = 0; i < cantidadDetalles; i++) {
+
+                    int posicion = 3 + (i * 3);
+
+                    DetalleInventario detalle =
+                            new DetalleInventario();
+
+                    detalle.setIdArticulo(
+                            Integer.parseInt(datos[posicion]));
+
+                    detalle.setCantidad(
+                            Integer.parseInt(datos[posicion + 1]));
+
+                    detalle.setPrecio(
+                            Double.parseDouble(datos[posicion + 2]));
+
+                    detalles.add(detalle);
+                }
+
+                InventarioBL bl = new InventarioBL();
+
+                int numero = bl.guardar(cabecera, detalles);
+
+                if (numero > 0) {
+                    return "GUARDADO|" + numero;
+                }
+
+                return "NO_GUARDADO";
+
             } catch (Exception e) {
-                return "ERROR|"
-                        + e.getMessage();
+
+                return "ERROR|" + e.getMessage();
             }
         }
+
+        // Modificar comprobante con uno o varios detalles.
+        // Formato:
+        // NUMERO|FECHA|TIPO|CANTIDAD_DETALLES|ARTICULO|CANTIDAD|PRECIO...
+        if (operacion.equals("MODIFICAR_COMPROBANTE")) {
+
+            try {
+
+                String[] datos = dato.split("\\|");
+
+                if (datos.length < 7) {
+                    return "ERROR|Datos incompletos";
+                }
+
+                SimpleDateFormat formato =
+                        new SimpleDateFormat("dd/MM/yyyy");
+
+                formato.setLenient(false);
+
+                CabeceraInventario cabecera =
+                        new CabeceraInventario();
+
+                cabecera.setNumero(
+                        Integer.parseInt(datos[0]));
+
+                cabecera.setFecha(
+                        formato.parse(datos[1]));
+
+                cabecera.setIdTipoMovimiento(
+                        Integer.parseInt(datos[2]));
+
+                int cantidadDetalles =
+                        Integer.parseInt(datos[3]);
+
+                if (cantidadDetalles <= 0
+                        || datos.length != 4 + cantidadDetalles * 3) {
+                    return "ERROR|Cantidad de detalles incorrecta";
+                }
+
+                List<DetalleInventario> detalles =
+                        new ArrayList<>();
+
+                for (int i = 0; i < cantidadDetalles; i++) {
+
+                    int posicion = 4 + (i * 3);
+
+                    DetalleInventario detalle =
+                            new DetalleInventario();
+
+                    detalle.setIdArticulo(
+                            Integer.parseInt(datos[posicion]));
+
+                    detalle.setCantidad(
+                            Integer.parseInt(datos[posicion + 1]));
+
+                    detalle.setPrecio(
+                            Double.parseDouble(datos[posicion + 2]));
+
+                    detalles.add(detalle);
+                }
+
+                InventarioBL bl = new InventarioBL();
+
+                boolean resultado =
+                        bl.modificar(cabecera, detalles);
+
+                if (resultado) {
+                    return "MODIFICADO";
+                }
+
+                return "NO_MODIFICADO";
+
+            } catch (Exception e) {
+
+                return "ERROR|" + e.getMessage();
+            }
+        }
+
                 // Listar tipos de movimiento para el reporte de matriz.
         if (operacion.equals("LISTAR_TIPOS_MATRIZ")) {
 
@@ -496,6 +592,49 @@ public class ProcesadorInventario {
                 return "ERROR|" + e.getMessage();
             }
         }
+        
+        // Listar saldos de artículos para el reporte.
+        if (operacion.equals("LISTAR_SALDOS")) {
+
+            try {
+
+                SimpleDateFormat formato =
+                        new SimpleDateFormat("dd/MM/yyyy");
+
+                formato.setLenient(false);
+
+                Date hasta = formato.parse(dato);
+
+                ReporteInventarioBL reporteBL =
+                        new ReporteInventarioBL();
+
+                List<SaldoArticulo> saldos =
+                        reporteBL.listarSaldos(hasta);
+
+                StringBuilder respuesta =
+                        new StringBuilder();
+
+                for (SaldoArticulo saldo : saldos) {
+
+                    respuesta.append(saldo.getCodigo())
+                            .append("|")
+                            .append(saldo.getNombre())
+                            .append("|")
+                            .append(saldo.getPrecio())
+                            .append("|")
+                            .append(saldo.getStock())
+                            .append("\n");
+                }
+
+                return respuesta.toString();
+
+            } catch (Exception e) {
+
+                return "ERROR|" + e.getMessage();
+            }
+        }
+
+        
         
         return "OPERACION_NO_VALIDA";
     }

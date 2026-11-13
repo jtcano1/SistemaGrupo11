@@ -4,25 +4,28 @@ package presentacion.inventarios;
 import javax.swing.table.DefaultTableModel;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import negocio.inventarios.ArticuloBL;
-import negocio.inventarios.TipoMovimientoBL;
 import entidades.inventarios.Articulo;
 import entidades.inventarios.TipoMovimiento;
 import java.util.List;
 import javax.swing.JOptionPane;
 import entidades.inventarios.CabeceraInventario;
 import entidades.inventarios.DetalleInventario;
-import negocio.inventarios.InventarioBL;
 import java.util.ArrayList;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+import comunicacion.cliente.ClienteSocket;
+import comunicacion.cliente.ClienteArticulo;
+import comunicacion.cliente.ClienteTipoMovimiento;
+
 
 
 public class FrmInventario extends javax.swing.JFrame {
         private DefaultTableModel modeloDetalle;
-        private final ArticuloBL articuloBL = new ArticuloBL();
-        private final TipoMovimientoBL tipoMovimientoBL = new TipoMovimientoBL();
-        private final InventarioBL inventarioBL = new InventarioBL();
+        
+        private final ClienteArticulo clienteArticulo = new ClienteArticulo();
+        private final ClienteTipoMovimiento clienteTipoMovimiento =
+                new ClienteTipoMovimiento();
+        private final ClienteSocket clienteSocket = new ClienteSocket();
         
         private List<Articulo> listaArticulos;
         private List<TipoMovimiento> listaTiposMovimiento;
@@ -55,13 +58,13 @@ public FrmInventario() {
 private void cargarDatosIniciales() {
 
     try {
-        listaTiposMovimiento = tipoMovimientoBL.listar();
+        listaTiposMovimiento = clienteTipoMovimiento.listar();
         cmbTipoMovimiento.removeAllItems();
         for (TipoMovimiento tipo : listaTiposMovimiento) {
             cmbTipoMovimiento.addItem(tipo.getNombre());
         }
         // Cargar artículos
-        listaArticulos = articuloBL.listar();
+        listaArticulos = clienteArticulo.listar();
         cmbArticulo.removeAllItems();
         for (Articulo articulo : listaArticulos) {
             cmbArticulo.addItem(articulo.getNombre());
@@ -515,7 +518,7 @@ private void guardarComprobante() {
         }
 
         // Enviar cabecera y detalles a la capa de negocio
-        int numeroGenerado = inventarioBL.guardar(
+        int numeroGenerado = clienteSocket.guardar(
                 cabecera,
                 detalles
         );
@@ -600,7 +603,7 @@ private void guardarComprobante() {
             int numero = Integer.parseInt(txtNumero.getText().trim());
 
             CabeceraInventario cabecera =
-                    inventarioBL.buscarCabecera(numero);
+                    clienteSocket.buscarCabecera(numero);
 
             if (cabecera == null) {
                 JOptionPane.showMessageDialog(
@@ -613,7 +616,7 @@ private void guardarComprobante() {
             }
 
             List<DetalleInventario> detalles =
-                    inventarioBL.listarDetalles(numero);
+                    clienteSocket.listarDetalles(numero);
 
             if (detalles == null) {
                 JOptionPane.showMessageDialog(
@@ -822,7 +825,7 @@ private void guardarComprobante() {
             }
 
             boolean actualizado =
-                    inventarioBL.modificar(cabecera, detalles);
+                    clienteSocket.modificar(cabecera, detalles);
 
             if (actualizado) {
 
@@ -898,7 +901,7 @@ private void guardarComprobante() {
                 return;
             }
 
-            boolean eliminado = inventarioBL.eliminar(numero);
+            boolean eliminado = clienteSocket.eliminar(numero);
 
             if (eliminado) {
 

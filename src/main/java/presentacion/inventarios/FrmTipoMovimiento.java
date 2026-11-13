@@ -1,13 +1,16 @@
 
 package presentacion.inventarios;
 
-import datos.inventarios.TipoMovimientoDAO;
+import comunicacion.cliente.ClienteTipoMovimiento;
 import entidades.inventarios.TipoMovimiento;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class FrmTipoMovimiento extends javax.swing.JFrame {
+    
+    private final ClienteTipoMovimiento clienteTipoMovimiento =
+        new ClienteTipoMovimiento();
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmTipoMovimiento.class.getName());
 
@@ -17,7 +20,11 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
 public FrmTipoMovimiento() {
     initComponents();
 
+    // El código se genera automáticamente en Oracle.
+    txtCodigo.setEditable(false);
+
     cargarTabla();
+
     tblTipoMovimiento.addMouseListener(
         new java.awt.event.MouseAdapter() {
 
@@ -198,13 +205,17 @@ public FrmTipoMovimiento() {
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         // TODO add your handling code here:
-        int codigo = Integer.parseInt(txtCodigo.getText());
-        
-        TipoMovimientoDAO dao =
-            new TipoMovimientoDAO();
-        
-        if (dao.eliminar(codigo)) {
-            JOptionPane.showMessageDialog(
+         if (txtCodigo.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(
+                this, "Seleccione un tipo de movimiento");
+        return;
+    }
+
+    int codigo = Integer.parseInt(txtCodigo.getText());
+
+    if (clienteTipoMovimiento.eliminar(codigo)) {
+
+        JOptionPane.showMessageDialog(
                 this, "Eliminado correctamente");
 
         cargarTabla();
@@ -212,11 +223,13 @@ public FrmTipoMovimiento() {
         txtCodigo.setText("");
         txtNombre.setText("");
         txtSigno.setText("");
-        
-        } else {
-            JOptionPane.showMessageDialog(
+
+    } else {
+
+        JOptionPane.showMessageDialog(
                 this, "Error al eliminar");
     }
+    
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
@@ -228,71 +241,120 @@ public FrmTipoMovimiento() {
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         // TODO add your handling code here:
-        TipoMovimiento tipo =
-            new TipoMovimiento();
         
-        tipo.setNombre(txtNombre.getText());
-        tipo.setSigno(Integer.parseInt(txtSigno.getText()));
-        
-        TipoMovimientoDAO dao =new TipoMovimientoDAO();
-        
-        if (dao.guardar(tipo)) {
-            JOptionPane.showMessageDialog(
-                this, "Tipo movimiento guardado");
-        
-            cargarTabla();
-        
-    } else {
+    if (txtNombre.getText().trim().isEmpty()
+            || txtSigno.getText().trim().isEmpty()) {
 
-        JOptionPane.showMessageDialog(this, "Error al guardar");
+        JOptionPane.showMessageDialog(
+                this, "Complete todos los campos");
+        return;
     }
-        
+
+    try {
+
+        TipoMovimiento tipo = new TipoMovimiento();
+
+        tipo.setNombre(txtNombre.getText().trim());
+        tipo.setSigno(Integer.parseInt(txtSigno.getText().trim()));
+
+        if (clienteTipoMovimiento.guardar(tipo)) {
+
+            JOptionPane.showMessageDialog(
+                    this, "Tipo de movimiento guardado");
+
+            cargarTabla();
+
+            txtCodigo.setText("");
+            txtNombre.setText("");
+            txtSigno.setText("");
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this, "Error al guardar");
+        }
+
+    } catch (NumberFormatException e) {
+
+        JOptionPane.showMessageDialog(
+                this, "El signo debe ser un número entero");
+    }
+    
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         // TODO add your handling code here:
-        int codigo =Integer.parseInt(txtCodigo.getText());
-        
-        TipoMovimientoDAO dao =new TipoMovimientoDAO();
-        TipoMovimiento tipo = dao.buscar(codigo);
-        
-        if (tipo != null) {
-            txtNombre.setText(tipo.getNombre());
-            txtSigno.setText(String.valueOf(
-                        tipo.getSigno()));
-    
-        } else {
+        if (txtCodigo.getText().trim().isEmpty()) {
 
         JOptionPane.showMessageDialog(
-                this,
-                "No encontrado");
+                this, "Seleccione un tipo de movimiento en la tabla");
+        return;
+    }
+
+    try {
+
+        int codigo = Integer.parseInt(txtCodigo.getText());
+
+        TipoMovimiento tipo =
+                clienteTipoMovimiento.buscar(codigo);
+
+        if (tipo != null) {
+
+            txtNombre.setText(tipo.getNombre());
+            txtSigno.setText(String.valueOf(tipo.getSigno()));
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this, "No encontrado");
+        }
+
+    } catch (NumberFormatException e) {
+
+        JOptionPane.showMessageDialog(
+                this, "Código inválido");
     }
 
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModificarActionPerformed
         // TODO add your handling code here:
-         TipoMovimiento tipo =new TipoMovimiento();
-         
-         tipo.setCodigo(Integer.parseInt(
-                    txtCodigo.getText()));
-         tipo.setNombre(
-            txtNombre.getText());
-         tipo.setSigno(Integer.parseInt(
-                    txtSigno.getText()));
-         
-         TipoMovimientoDAO dao = new TipoMovimientoDAO();
-         
-         if (dao.modificar(tipo)) {
-             JOptionPane.showMessageDialog(
-                this, "Modificado correctamente");
-             
-             cargarTabla();
-         
-         } else {
-             JOptionPane.showMessageDialog(
-                this, "Error al modificar");
+         if (txtCodigo.getText().trim().isEmpty()
+            || txtNombre.getText().trim().isEmpty()
+            || txtSigno.getText().trim().isEmpty()) {
+
+        JOptionPane.showMessageDialog(
+                this, "Complete todos los campos");
+        return;
     }
+
+    try {
+
+        TipoMovimiento tipo = new TipoMovimiento();
+
+        tipo.setCodigo(Integer.parseInt(txtCodigo.getText()));
+        tipo.setNombre(txtNombre.getText().trim());
+        tipo.setSigno(Integer.parseInt(txtSigno.getText().trim()));
+
+        if (clienteTipoMovimiento.modificar(tipo)) {
+
+            JOptionPane.showMessageDialog(
+                    this, "Modificado correctamente");
+
+            cargarTabla();
+
+        } else {
+
+            JOptionPane.showMessageDialog(
+                    this, "Error al modificar");
+        }
+
+    } catch (NumberFormatException e) {
+
+        JOptionPane.showMessageDialog(
+                this, "El código y el signo deben ser números enteros");
+    }
+    
     }//GEN-LAST:event_btnModificarActionPerformed
 
     private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
@@ -303,35 +365,45 @@ public FrmTipoMovimiento() {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtSignoActionPerformed
 
-    private void cargarTabla() {
-        DefaultTableModel modelo =
-            (DefaultTableModel)
-                    tblTipoMovimiento.getModel();
-        
-        modelo.setRowCount(0);
-        
-        TipoMovimientoDAO dao = new TipoMovimientoDAO();     
-        List<TipoMovimiento> lista = dao.listar();
-        
-        for (TipoMovimiento t : lista) {
-            modelo.addRow(new Object[]{
-                t.getCodigo(),
-                t.getNombre(),
-                t.getSigno()
-            });
+private void cargarTabla() {
+
+    DefaultTableModel modelo =
+            (DefaultTableModel) tblTipoMovimiento.getModel();
+
+    modelo.setRowCount(0);
+
+    List<TipoMovimiento> lista =
+            clienteTipoMovimiento.listar();
+
+    for (TipoMovimiento t : lista) {
+
+        modelo.addRow(new Object[]{
+            t.getCodigo(),
+            t.getNombre(),
+            t.getSigno()
+        });
     }
 }
-    private void tblTipoMovimientoMouseClicked(java.awt.event.MouseEvent evt) {
-        
-        int fila = tblTipoMovimiento.getSelectedRow();
-        
-        txtCodigo.setText(tblTipoMovimiento.getValueAt(
-                    fila,0).toString());
-        txtNombre.setText(tblTipoMovimiento.getValueAt(
-                    fila,1).toString());
-        txtSigno.setText(tblTipoMovimiento.getValueAt(
-                    fila,2).toString());
+
+    private void tblTipoMovimientoMouseClicked(
+        java.awt.event.MouseEvent evt) {
+
+    int fila = tblTipoMovimiento.getSelectedRow();
+
+    if (fila < 0) {
+        return;
+    }
+
+    txtCodigo.setText(
+            tblTipoMovimiento.getValueAt(fila, 0).toString());
+
+    txtNombre.setText(
+            tblTipoMovimiento.getValueAt(fila, 1).toString());
+
+    txtSigno.setText(
+            tblTipoMovimiento.getValueAt(fila, 2).toString());
 }
+    
     /**
      * @param args the command line arguments
      */

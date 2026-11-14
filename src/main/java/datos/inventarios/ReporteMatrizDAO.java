@@ -52,27 +52,32 @@ public class ReporteMatrizDAO {
             Date hasta) throws SQLException {
 
         List<MovimientoMatriz> lista = new ArrayList<>();
-
-        String sql =
-                "SELECT "
-                + "A.CODIGO AS CODIGO_ARTICULO, "
-                + "A.NOMBRE AS ARTICULO, "
-                + "TM.CODIGO AS CODIGO_TIPO, "
-                + "TM.NOMBRE AS TIPO_MOVIMIENTO, "
-                + "NVL(SUM(D.CANTIDAD), 0) AS CANTIDAD "
-                + "FROM ARTICULO A "
-                + "LEFT JOIN DETALLE_INVENTARIO D "
-                + "ON A.CODIGO = D.ID_ARTICULO "
-                + "LEFT JOIN CABECERA_INVENTARIO C "
-                + "ON D.NUMERO_COMPROBANTE = C.NUMERO "
-                + "AND C.FECHA >= ? "
-                + "AND C.FECHA < ? "
-                + "LEFT JOIN TIPO_MOVIMIENTO TM "
-                + "ON C.ID_TIPO_MOVIMIENTO = TM.CODIGO "
-                + "GROUP BY "
-                + "A.CODIGO, A.NOMBRE, "
-                + "TM.CODIGO, TM.NOMBRE "
-                + "ORDER BY A.CODIGO, TM.CODIGO";
+        
+        
+String sql =
+        "SELECT "
+        + "A.CODIGO AS CODIGO_ARTICULO, "
+        + "A.NOMBRE AS ARTICULO, "
+        + "TM.CODIGO AS CODIGO_TIPO, "
+        + "TM.NOMBRE AS TIPO_MOVIMIENTO, "
+        + "NVL(M.CANTIDAD, 0) AS CANTIDAD "
+        + "FROM ARTICULO A "
+        + "LEFT JOIN ( "
+        + "    SELECT "
+        + "    D.ID_ARTICULO, "
+        + "    C.ID_TIPO_MOVIMIENTO, "
+        + "    SUM(D.CANTIDAD) AS CANTIDAD "
+        + "    FROM DETALLE_INVENTARIO D "
+        + "    INNER JOIN CABECERA_INVENTARIO C "
+        + "    ON D.NUMERO_COMPROBANTE = C.NUMERO "
+        + "    WHERE C.FECHA >= ? "
+        + "    AND C.FECHA < ? "
+        + "    GROUP BY D.ID_ARTICULO, C.ID_TIPO_MOVIMIENTO "
+        + ") M "
+        + "ON A.CODIGO = M.ID_ARTICULO "
+        + "LEFT JOIN TIPO_MOVIMIENTO TM "
+        + "ON M.ID_TIPO_MOVIMIENTO = TM.CODIGO "
+        + "ORDER BY A.CODIGO, TM.CODIGO";
 
         Calendar calendario = Calendar.getInstance();
         calendario.setTime(hasta);

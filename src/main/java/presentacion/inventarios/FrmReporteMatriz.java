@@ -2,7 +2,7 @@ package presentacion.inventarios;
 
 import entidades.inventarios.ColumnaMovimiento;
 import entidades.inventarios.MovimientoMatriz;
-import negocio.inventarios.ReporteMatrizBL;
+import comunicacion.cliente.ClienteReporteMatriz;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -28,8 +28,8 @@ import javax.swing.table.DefaultTableModel;
 
 public class FrmReporteMatriz extends JFrame {
 
-    private final ReporteMatrizBL reporteBL =
-            new ReporteMatrizBL();
+    private final ClienteReporteMatriz clienteReporte =
+            new ClienteReporteMatriz();
 
     private JTable tabla;
     private DefaultTableModel modelo;
@@ -176,11 +176,11 @@ public class FrmReporteMatriz extends JFrame {
 
         // CONSULTAR TIPOS
         List<ColumnaMovimiento> tipos =
-                reporteBL.listarTipos();
+                clienteReporte.listarTipos();
 
         // CONSULTAR MOVIMIENTOS DEL PERIODO
         List<MovimientoMatriz> movimientos =
-                reporteBL.listarMovimientos(
+                clienteReporte.listarMovimientos(
                         desde, hasta);
 
         if (tipos.isEmpty()) {

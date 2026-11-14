@@ -2,7 +2,7 @@
 package presentacion.inventarios;
 
 import entidades.inventarios.SaldoArticulo;
-import negocio.inventarios.ReporteInventarioBL;
+import comunicacion.cliente.ClienteReporteSaldos;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -23,8 +23,8 @@ import java.util.Calendar;
 
 public class FrmReporteSaldos extends JFrame {
 
-    private final ReporteInventarioBL reporteBL =
-            new ReporteInventarioBL();
+    private final ClienteReporteSaldos cliente =
+            new ClienteReporteSaldos();
 
     private JTable tabla;
     private DefaultTableModel modelo;
@@ -120,33 +120,36 @@ public class FrmReporteSaldos extends JFrame {
 
         btnCerrar.addActionListener(e -> dispose());
     }
+    
+    
+private void cargarReporte() {
 
-    private void cargarReporte() {
+    modelo.setRowCount(0);
 
-        modelo.setRowCount(0);
-        
-        Date fechaHasta =(Date) spHasta.getValue();
-        
-        List<SaldoArticulo> lista = reporteBL.listarSaldos(fechaHasta);
+    Date fechaHasta = (Date) spHasta.getValue();
 
-        for (SaldoArticulo saldo : lista) {
+    List<SaldoArticulo> lista =
+            cliente.listarSaldos(fechaHasta);
 
-            modelo.addRow(new Object[]{
-                saldo.getCodigo(),
-                saldo.getNombre(),
-                saldo.getPrecio(),
-                saldo.getStock()
-            });
-        }
+    for (SaldoArticulo saldo : lista) {
 
-        if (lista.isEmpty()) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se encontraron artículos para el reporte.");
-        }
+        modelo.addRow(new Object[]{
+            saldo.getCodigo(),
+            saldo.getNombre(),
+            saldo.getPrecio(),
+            saldo.getStock()
+        });
     }
 
+    if (lista.isEmpty()) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "No se encontraron artículos para el reporte.");
+    }
+}
+
+    
     private void imprimirReporte() {
 
         try {

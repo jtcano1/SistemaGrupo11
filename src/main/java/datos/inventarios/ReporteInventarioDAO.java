@@ -26,7 +26,7 @@ public class ReporteInventarioDAO {
                 + "A.NOMBRE, "
                 + "A.PRECIO, "
                 + "NVL(SUM(CASE "
-                + "WHEN C.FECHA <= ? "
+                + "WHEN TRUNC(C.FECHA) <= TRUNC(?) "
                 + "THEN D.CANTIDAD * TM.SIGNO "
                 + "ELSE 0 END), 0) AS STOCK "
                 + "FROM ARTICULO A "

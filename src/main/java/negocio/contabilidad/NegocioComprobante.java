@@ -20,7 +20,7 @@ public class NegocioComprobante {
     // Así 2 clientes no pueden guardar el mismo numero al mismo tiempo
     private static final Object CANDADO = new Object();
 
-    // GUARDAR - devuelve String para que la pantalla muestre el mensaje del ingeniero
+    // GUARDAR - devuelve String para que la pantalla muestre el mensaje 
     public String guardar(CabeceraComprobante cab) {
         synchronized (CANDADO) {
             String error = validar(cab);

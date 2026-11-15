@@ -10,6 +10,11 @@ import datos.inventarios.ControlExistenciasDAO;
 import entidades.inventarios.CabeceraInventario;
 import entidades.inventarios.DetalleInventario;
 
+import datos.contabilidad.DAOComprobante;
+import entidades.contabilidad.CabeceraComprobante;
+import entidades.contabilidad.Cuenta;
+import entidades.contabilidad.DetalleComprobante;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -160,20 +165,73 @@ public class InventarioBL {
                                 "No se pudo guardar un detalle.");
                     }
                 }
+                CabeceraComprobante cabContable =new CabeceraComprobante();
+                cabContable.setFecha(cabecera.getFecha());
+                cabContable.setObservaciones("Comprobante Inventario N° " + numero);
+                
+                double total = 0;
+                for (DetalleInventario d : detalles) {
+                    total += d.getCantidad()
+                            * d.getPrecio();
+                }
 
+                Cuenta cuentaDebe = new Cuenta();
+                Cuenta cuentaHaber = new Cuenta();
+                DetalleComprobante detDebe =new DetalleComprobante();
+                DetalleComprobante detHaber =new DetalleComprobante();
+                
+                if (cabecera.getIdTipoMovimiento() == 41) {
+                    cuentaDebe.setCodigo("104");
+                    cuentaDebe.setNombre("Inventario de Mercadería");
+
+                    cuentaHaber.setCodigo("101");
+                    cuentaHaber.setNombre("Caja");
+
+                } else if (cabecera.getIdTipoMovimiento() == 2) {
+
+                    cuentaDebe.setCodigo("101");
+                    cuentaDebe.setNombre("Caja");
+
+                    cuentaHaber.setCodigo("401");
+                    cuentaHaber.setNombre("Ventas");
+                } else {
+                    cuentaDebe.setCodigo("104");
+                    cuentaDebe.setNombre("Inventario de Mercadería");
+
+                    cuentaHaber.setCodigo("101");
+                    cuentaHaber.setNombre("Caja");
+                }
+
+                detDebe.setCuenta(cuentaDebe);
+                detDebe.setDebe(total);
+                detDebe.setHaber(0);
+
+                detHaber.setCuenta(cuentaHaber);
+                detHaber.setDebe(0);
+                detHaber.setHaber(total);
+
+                cabContable.getDetalles().add(detDebe);    
+                cabContable.getDetalles().add(detHaber);
+
+                DAOComprobante daoContable =new DAOComprobante();
+                boolean contableOk=
+                        daoContable.insertar(cabContable);
+                if (!contableOk){
+                    throw new SQLException(
+                    "Error al generar comprobante contable");
+                
+                }
+                
                 cn.commit();
                 return numero;
-
+                
             } catch (SQLException e) {
-
+                
                 cn.rollback();
-
                 System.out.println(
                         "Error al guardar: " + e.getMessage());
-
                 return 0;
             }
-
         } catch (SQLException e) {
 
             System.out.println(

@@ -9,7 +9,7 @@ package datos.usuario;
  * @author USER
  */
 import conexion.ConexionOracle;
-import entidad.usuario.Usuario;
+import entidades.usuario.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

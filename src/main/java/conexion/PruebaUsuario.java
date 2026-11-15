@@ -9,7 +9,7 @@ package conexion;
  * @author USER
  */
 import bl.usuario.UsuarioBL;
-import entidad.usuario.Usuario;
+import entidades.usuario.Usuario;
 
 public class PruebaUsuario {
     public static void main(String[] args) {

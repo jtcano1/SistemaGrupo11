@@ -1,7 +1,7 @@
 package presentacion.usuario;
 
 import bl.usuario.UsuarioBL;
-import entidad.usuario.Usuario;
+import entidades.usuario.Usuario;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;

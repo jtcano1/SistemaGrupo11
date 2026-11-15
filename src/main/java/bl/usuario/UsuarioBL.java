@@ -9,7 +9,7 @@ package bl.usuario;
  * @author USER
  */
 import datos.usuario.UsuarioDAO;
-import entidad.usuario.Usuario;
+import entidades.usuario.Usuario;
 import java.util.List;
 
 public class UsuarioBL {

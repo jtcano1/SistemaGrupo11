@@ -20,6 +20,9 @@ public class FrmArticulo extends javax.swing.JFrame {
     public FrmArticulo() {
         initComponents();
         
+        setDefaultCloseOperation(
+                javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        
         // Impedir que el usuario escriba manualmente el código
         txtCodigo.setEditable(false);
         cargarTabla();
@@ -31,7 +34,9 @@ public class FrmArticulo extends javax.swing.JFrame {
             }
         }
     );
+        
     }
+    
 
 
     @SuppressWarnings("unchecked")

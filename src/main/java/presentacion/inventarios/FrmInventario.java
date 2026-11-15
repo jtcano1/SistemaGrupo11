@@ -36,6 +36,9 @@ public class FrmInventario extends javax.swing.JFrame {
 public FrmInventario() {
 
     initComponents();
+    
+    setDefaultCloseOperation(
+        javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     configurarFormulario();
     cargarDatosIniciales();
 

@@ -19,6 +19,8 @@ public class FrmTipoMovimiento extends javax.swing.JFrame {
      */
 public FrmTipoMovimiento() {
     initComponents();
+    setDefaultCloseOperation(
+            javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
     // El código se genera automáticamente en Oracle.
     txtCodigo.setEditable(false);

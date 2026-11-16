@@ -45,8 +45,11 @@ public class FrmComprobante extends javax.swing.JFrame {
             debe += Double.parseDouble(modeloDet.getValueAt(i, 2).toString());
             haber += Double.parseDouble(modeloDet.getValueAt(i, 3).toString());
         }
-        txtTotalDebe.setText(String.format("%.2f", debe));
-        txtTotalHaber.setText(String.format("%.2f", haber));
+txtTotalDebe.setText(
+        String.format(java.util.Locale.US, "%.2f", debe));
+
+txtTotalHaber.setText(
+        String.format(java.util.Locale.US, "%.2f", haber));
         if (debe == haber && debe > 0) lblEstado.setText("✅ CUADRADO - Debe = Haber");
         else lblEstado.setText("⚠️ NO CUADRA - Debe debe ser igual a Haber");
     }
@@ -230,30 +233,78 @@ public class FrmComprobante extends javax.swing.JFrame {
         actualizarTotales();
     }
 
-    private void guardar(boolean esModificar) {
-        try {
-            if (modeloDet.getRowCount() < 2) { JOptionPane.showMessageDialog(this, "Mínimo 2 líneas: una al Debe y otra al Haber"); return; }
-            if (txtObservaciones.getText().trim().isEmpty()) { JOptionPane.showMessageDialog(this, "Falta Observaciones"); return; }
-            double debe = Double.parseDouble(txtTotalDebe.getText());
-            double haber = Double.parseDouble(txtTotalHaber.getText());
-            if (debe != haber) { JOptionPane.showMessageDialog(this, "NO CUADRA: Debe (" + debe + ") debe ser igual a Haber (" + haber + ")"); return; }
+private void guardar(boolean esModificar) {
+    try {
 
-            CabeceraComprobante cab = new CabeceraComprobante();
-            if (esModificar) {
-                if (numeroEditando == 0) { JOptionPane.showMessageDialog(this, "Primero busca o selecciona un comprobante para modificar"); return; }
-                cab.setNumero(numeroEditando);
+        if (modeloDet.getRowCount() < 2) {
+            JOptionPane.showMessageDialog(this,
+                    "Mínimo 2 líneas: una al Debe y otra al Haber");
+            return;
+        }
+
+        if (txtObservaciones.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Falta Observaciones");
+            return;
+        }
+
+        double debe = Double.parseDouble(
+                txtTotalDebe.getText().replace(",", "."));
+
+        double haber = Double.parseDouble(
+                txtTotalHaber.getText().replace(",", "."));
+
+        if (debe != haber) {
+            JOptionPane.showMessageDialog(this,
+                    "NO CUADRA: Debe (" + debe
+                    + ") debe ser igual a Haber (" + haber + ")");
+            return;
+        }
+
+        CabeceraComprobante cab = new CabeceraComprobante();
+
+        if (esModificar) {
+            if (numeroEditando == 0) {
+                JOptionPane.showMessageDialog(this,
+                        "Primero busca o selecciona un comprobante para modificar");
+                return;
             }
-            cab.setFecha(new java.text.SimpleDateFormat("dd/MM/yyyy").parse(txtFecha.getText().trim()));
-            cab.setObservaciones(txtObservaciones.getText().trim());
-            cab.setDetalles(armarDetallesDesdeTabla());
+            cab.setNumero(numeroEditando);
+        }
 
-            boolean ok = esModificar ? daoComp.modificar(cab) : daoComp.insertar(cab);
-            if (ok) {
-                JOptionPane.showMessageDialog(this, esModificar ? "✅ Modificado" : "✅ Comprobante guardado - N° " + cab.getNumero());
-                limpiarTodo(); listarComprobantes();
-            } else JOptionPane.showMessageDialog(this, "Error al guardar");
-        } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage()); }
+        cab.setFecha(
+                new java.text.SimpleDateFormat("dd/MM/yyyy")
+                        .parse(txtFecha.getText().trim()));
+
+        cab.setObservaciones(
+                txtObservaciones.getText().trim());
+
+        cab.setDetalles(
+                armarDetallesDesdeTabla());
+
+        boolean ok = esModificar
+                ? daoComp.modificar(cab)
+                : daoComp.insertar(cab);
+
+        if (ok) {
+            JOptionPane.showMessageDialog(this,
+                    esModificar
+                            ? "✅ Modificado"
+                            : "✅ Comprobante guardado - N° " + cab.getNumero());
+
+            limpiarTodo();
+            listarComprobantes();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Error al guardar");
+        }
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this,
+                "Error: " + ex.getMessage());
     }
+}
+    
 
     public static void main(String args[]) { java.awt.EventQueue.invokeLater(() -> new FrmComprobante().setVisible(true)); }
 

@@ -1,34 +1,49 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entidades.mantenimiento;
 
 import java.io.Serializable;
 import java.util.Date;
 
 public class Activo implements Serializable {
-    private int id;
+
+    private int codigo;
     private String nombre;
     private Date fechaCompra;
 
-    public Activo() {}
+    public Activo() {
+    }
 
-    public Activo(int id, String nombre, Date fechaCompra) {
-        this.id = id;
+    public Activo(int codigo, String nombre, Date fechaCompra) {
+        this.codigo = codigo;
         this.nombre = nombre;
         this.fechaCompra = fechaCompra;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getCodigo() {
+        return codigo;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
 
-    public Date getFechaCompra() { return fechaCompra; }
-    public void setFechaCompra(Date fechaCompra) { this.fechaCompra = fechaCompra; }
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Date getFechaCompra() {
+        return fechaCompra;
+    }
+
+    public void setFechaCompra(Date fechaCompra) {
+        this.fechaCompra = fechaCompra;
+    }
 
     @Override
-    public String toString() { return nombre; }
+    public String toString() {
+        return nombre;
+    }
 }
